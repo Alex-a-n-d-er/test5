@@ -12,35 +12,37 @@ protected:
 	int **arcs;							    // 存放边信息邻接矩阵
 	ElemType *vertexes;						// 存放顶点信息的数组 
 	mutable Status *tag;					// 标志数组
-	vector<vector<int> > allPath;
+	vector<vector<int> > allPath;           // 深度优先遍历中记录路径的二维向量
 public:
 // 邻接矩阵类型的方法声明:
 	AdjMatrixUndirGraph(ElemType es[], int vertexNum, int vertexMaxNum = DEFAULT_SIZE);	
 		// 以数组es[]为顶点,顶点个数为vertexNum,允许的顶点最大数目为vertexMaxNum,边数为0的有向图
 	AdjMatrixUndirGraph(int vertexMaxNum = DEFAULT_SIZE);	
 		// 构造允许的顶点最大数目为vertexMaxNum,边数为0的有向图
-	~AdjMatrixUndirGraph();					// 析构函数
-	void Clear();			              // 清空图			 
-	bool IsEmpty();                       // 判断有向图是否为空 
-	int GetOrder(ElemType &d) const;           // 求顶点的序号	
-	Status GetElem(int v, ElemType &d) const;// 求顶点的元素值	
-	Status SetElem(int v, const ElemType &d);// 设置顶点的元素值
-	int GetVexNum() const;					// 返回顶点个数			 
-	int GetArcNum() const;					// 返回边数			 
-	int FirstAdjVex(int v) const;		 // 返回顶点v的第一个邻接点	(包含出度入度）		 
+	~AdjMatrixUndirGraph();						 // 析构函数
+	void Clear();								 // 清空图			 
+	bool IsEmpty();								 // 判断有向图是否为空 
+	int GetOrder(ElemType &d) const;             // 求顶点的序号	
+	Status GetElem(int v, ElemType &d) const;	 // 求顶点的元素值	
+	Status SetElem(int v, const ElemType &d);	 // 设置顶点的元素值
+	int GetVexNum() const;					 	 // 返回顶点个数			 
+	int GetArcNum() const;						 // 返回边数			 
+	int FirstAdjVex(int v) const;		         // 返回顶点v的第一个邻接点	(包含出度入度）		 
 	int NextAdjVex(int v1, int v2) const;		 // 返回顶点v1的相对于v2的下一个邻接点（包含出度入读）			 
 	void InsertVex(const ElemType &d);			 // 插入元素值为d的顶点		 
-	void InsertArc(int v1, int v2,int weight);			     // 插入顶点为v1和v2的边（v1为入度，v2为出度）		 
+	void InsertArc(int v1, int v2,int weight);   // 插入顶点为v1和v2的边（v1为入度，v2为出度）		 
 	void DeleteVex(const ElemType &d);			 // 删除元素值为d的顶点			 
 	void DeleteArc(int v1, int v2);			     // 删除顶点为v1和v2的边 包括出度入度			 
 	Status GetTag(int v) const;			         // 返回顶点v的标志		 
-	void SetTag(int v, Status val) const;	   // 设置顶点v的标志为val
+	void SetTag(int v, Status val) const;	     // 设置顶点v的标志为val
 
-    int GetWeight(int v1, int v2) const;//求有向边的权值
-	int CountOutDegree(int v) const;    //统计顶点 v的出度；
-	int CountInDegree(int v) const;     //统计顶点 v的入度；
-	int hasCycle();                 //判断有向图是否存在环。
-	int hasCycleViolent();
+    int GetWeight(int v1, int v2) const;		 //求有向边的权值
+	int CountOutDegree(int v) const;			 //统计顶点 v的出度；
+	int CountInDegree(int v) const;			 	 //统计顶点 v的入度；
+												 //判断有向图是否存在环。
+	int AdjHasCycle();
+	int  ViolentHasCycle();
+	void DfsHascycle(int u, int v, vector<int> path, int flag);
 	void SecShortestPath(ElemType& a, ElemType& b);
 	void dfs(int u, int v, vector<int> path, int flag);
 	AdjMatrixUndirGraph(const AdjMatrixUndirGraph<ElemType> &g);	// 复制构造函数
@@ -405,10 +407,10 @@ int AdjMatrixUndirGraph<ElemType>::GetWeight(int v1, int v2) const
 		throw Error("v1不合法!");	// 抛出异常
 	if (v2 < 0 || v2 >= vexNum)
 		throw Error("v2不合法!");	// 抛出异常
-	//if (v1 == v2)
-	//	throw Error("v1不能等于v2!");// 抛出异常
-	//if (arcs[v1][v2] == DEFAULT_INFINITY) 
-	//	throw Error("v1、v2不相邻!");// 抛出异常	
+	if (v1 == v2)
+		throw Error("v1不能等于v2!");// 抛出异常
+	if (arcs[v1][v2] == DEFAULT_INFINITY) 
+		throw Error("v1、v2不相邻!");// 抛出异常	
 	else 
 		return arcs[v1][v2];	    // 返回权值
 	
@@ -435,16 +437,35 @@ int AdjMatrixUndirGraph<ElemType>::CountInDegree(int v) const
 	for (int u = 0; u < vexNum; u++)
 		if (arcs[u][v] != 0 || arcs[u][v] != DEFAULT_INFINITY)
 			ID++;
-
 	return ID;
 }
 
+template<class ElemType>
+void AdjMatrixUndirGraph<ElemType>::DfsHascycle(int u, int v, vector<int> path, int flag) {  //找出所有从u到v的路径存到全局变量allPath中
+	if (u == v && flag != 0) {
+		allPath.push_back(path);
+		return;
+	}
+
+	for (int i = 0; i < vexNum; i++) {     //vec[i][j]表示第i元素的j列出度元素
+		if (arcs[u][i] != DEFAULT_INFINITY && arcs[u][i] != 0) {
+			if (tag[i] == UNVISITED) {
+				tag[i] = VISITED;
+				path.push_back(i);
+				flag = 1;
+				dfs(i, v, path, flag);
+				path.pop_back();
+				tag[i] = UNVISITED;
+			}
+		}
+	}
+}
+
 template <class ElemType>
-int AdjMatrixUndirGraph<ElemType>::hasCycleViolent()
-//暴力判断有向图是否存在环
+int AdjMatrixUndirGraph<ElemType>::AdjHasCycle()
+//可达矩阵判断有向图是否存在环
 {
-	int l = 0;                          //路径长度，同时是矩阵乘方数
-	int flag = 0;
+	int l = 0,flag = 0;              //l为路径长度，同时是矩阵乘方数
 	int** a;                          //用于存放领接矩阵的n次方的矩阵 
 	a = (int**) new int* [vexNum];
 	for (int v = 0; v < vexNum; v++)
@@ -452,28 +473,22 @@ int AdjMatrixUndirGraph<ElemType>::hasCycleViolent()
 	for (int i = 0; i < vexNum; i++)
 		for (int j = 0; j < vexNum; j++)
 			a[i][j] = 0;                   //初始化
-
 	int** b; //用于存放领接矩阵的n次方的矩阵
 	b = (int**)new int* [vexNum];
 	for (int v = 0; v < vexNum; v++)
 		b[v] = new int[vexNum];
-
 	for (int i = 0; i < vexNum; i++)
-		for (int j = 0; j < vexNum; j++)
-		{
-			if (arcs[i][j] != 0 && arcs[i][j] != DEFAULT_INFINITY)
-			{
+		for (int j = 0; j < vexNum; j++){
+			if (arcs[i][j] != 0 && arcs[i][j] != DEFAULT_INFINITY){
 				arcs[i][j] = 1;
 				b[i][j] = 1;
 			}
-			else
-			{
+			else{
 				arcs[i][j] = 0;
 				b[i][j] = 0;
 			}
 		}
-	for (l = 1; l <= vexNum; l++)
-	{
+	for (l = 1; l <= vexNum; l++){
 		for (int i = 0; i < vexNum; i++)
 			for (int j = 0; j < vexNum; j++)
 				for (int k = 0; k < vexNum; k++)
@@ -481,26 +496,20 @@ int AdjMatrixUndirGraph<ElemType>::hasCycleViolent()
 		for (int i = 0; i < vexNum; i++)
 			for (int j = 0; j < vexNum; j++)
 				b[i][j] = a[i][j];
-		for (int k = 0; k < vexNum; k++)
-		{
-			if (a[k][k] != 0)
-			{
-				flag = 1;
-				break;
+		for (int k = 0; k < vexNum; k++){
+			if (a[k][k] != 0){
+				flag = 1; break;
 			}
 		}
-		if (flag)
-			break;
+		if (flag) break;
 	}
-	if (flag)
-		return 1;
-	else
-		return 0;
+	if (flag) return 1;				//有环
+	else	  return 0;				//无环
 }
 
 template <class ElemType>
-int AdjMatrixUndirGraph<ElemType>::hasCycle()
-//判断有向图是否存在环
+int AdjMatrixUndirGraph<ElemType>::ViolentHasCycle()
+//dfs判断有向图是否存在环
 {
 	vector<int> path;
 	int u=0,flag=0;
@@ -550,25 +559,20 @@ void AdjMatrixUndirGraph<ElemType>::SecShortestPath(ElemType& a, ElemType& b) {
 	}
 	if (i == vexNum) return;
 	v = i;                                    //找到a,b对应信息的序号
-
 	dfs(u, v, path,0);       //找到所有的路径
-
 	if (allPath.size() < 2) { cout << "无次短路径"; return; }  //判断有无次短路径
 	else {
 		int length = allPath.size();   //得到路径总数
 		int* L = new int[length];  //每条路径权重值
 		int* h = new int[length];  //复制一个L
-		for (i = 0; i < length; i++)
-		{
+		for (i = 0; i < length; i++){
 			L[i] = 0;
 			h[i] = 0;
 		}
-		for (i = 0; i < length; i++)
-		{
+		for (i = 0; i < length; i++){
 			int Q = allPath[i].size();
 			L[i] = GetWeight(u, allPath[i][0]);
-			for (j = 0; j < Q - 1; j++)
-			{
+			for (j = 0; j < Q - 1; j++){
 				L[i] = L[i] + GetWeight(allPath[i][j], allPath[i][j + 1]);   //路径相加
 			}
 		}                                                                 //算出每条路径的权重值
@@ -578,15 +582,13 @@ void AdjMatrixUndirGraph<ElemType>::SecShortestPath(ElemType& a, ElemType& b) {
 			if (L[j] == h[1]) break;
 		}
 		//打出路径
-		cout << "次短路径值为" << L[1] << endl;
+		cout << "次短路径值为" << L[i] << endl;
 		cout << "路径为:";
 		cout << vertexes[u] << "->";
 		for (i = 0; i < allPath[j].size() - 1; i++)
-		{
 			cout << vertexes[allPath[j][i]] << "->";
-		}
 		cout << vertexes[allPath[j][i]] << endl;
 	}
-	    allPath.clear();
+	    allPath.clear();                                       //释放二维向量
 }
 #endif

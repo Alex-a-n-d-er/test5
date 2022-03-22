@@ -25,20 +25,17 @@ int main(void)
 			{DEFAULT_INFINITY, DEFAULT_INFINITY,5, DEFAULT_INFINITY, DEFAULT_INFINITY},
 			{3,DEFAULT_INFINITY, DEFAULT_INFINITY, DEFAULT_INFINITY,1, DEFAULT_INFINITY},
 		};*/
-		int m[100][100];
-		for (int i = 0; i < 100; i++)
-		{
-			for (int j = 0; j < 100; j++)
-			{
-				m[i][j] = rand()%10;
-			}
+		char c = 'a', e, e1, e2;
+		int n = 10, v, v1, v2;
+		int w;                                        //存放权值
+		AdjMatrixUndirGraph<char> g(vexs, n, 10);
+
+		int m[10][10];
+		for (int i = 0; i < 10; i++){
+			for (int j = 0; j < 10; j++)
+				m[i][j] = rand() % 10;
 			m[i][i] = 0;
 		}
-		char c = 'a', e, e1, e2;
-		int n = 5, v, v1, v2;
-		int w;                                        //存放权值
-		AdjMatrixUndirGraph<char> g(vexs, n, 7);
-
 		for (int u = 0; u < n; u++)
 			for (int v = 0; v < n; v++)
 				if (m[u][v] != 0 && m[u][v] != DEFAULT_INFINITY) g.InsertArc(u, v, m[u][v]);
@@ -116,17 +113,20 @@ int main(void)
 					cout<<g.GetWeight(v1, v2);
 					break;
 				case 'A':
-					//git config --global http.proxy http ://127.0.0.1:19180
-					//git config --global https.proxy http ://127.0.0.1:19180
 					startTime = clock();
-					for (int i = 0; i < 100; i++)
-					cout<<g.hasCycle();
+					g.ViolentHasCycle();
 					endTime = clock();
+					cout << "使用dfs暴力运算的运行时间";
 					cout << setw(10) << (double)(endTime - startTime) / CLOCKS_PER_SEC << endl;
 					startTime = clock();
-					for (int i = 0; i < 100; i++)
-					cout << g.hasCycleViolent();
+					g.AdjHasCycle();
 					endTime = clock();
+					cout << "使用可达矩阵的运行时间";
+					cout << setw(10) << (double)(endTime - startTime) / CLOCKS_PER_SEC << endl;
+					startTime = clock();
+				    g.DfsHasCycle();
+					endTime = clock();
+					cout << "使用dfs的运行时间";
 					cout << setw(10) << (double)(endTime - startTime) / CLOCKS_PER_SEC <<  endl;
 					break;
 				case 'B':
