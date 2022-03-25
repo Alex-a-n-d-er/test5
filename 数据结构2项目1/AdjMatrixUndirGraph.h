@@ -40,9 +40,10 @@ public:
 	int CountOutDegree(int v) const;			 //统计顶点 v的出度；
 	int CountInDegree(int v) const;			 	 //统计顶点 v的入度；
 												 //判断有向图是否存在环。
-	int AdjHasCycle();
+	void AdjHasCycle();
 	int  ViolentHasCycle();
-	void DfsHascycle(int u, int v, vector<int> path, int flag);
+	void DfsHasCycle();
+	int Dfs(int u, int v,int flag);
 	void SecShortestPath(ElemType& a, ElemType& b);
 	void dfs(int u, int v, vector<int> path, int flag);
 	AdjMatrixUndirGraph(const AdjMatrixUndirGraph<ElemType> &g);	// 复制构造函数
@@ -440,29 +441,47 @@ int AdjMatrixUndirGraph<ElemType>::CountInDegree(int v) const
 	return ID;
 }
 
-template<class ElemType>
-void AdjMatrixUndirGraph<ElemType>::DfsHascycle(int u, int v, vector<int> path, int flag) {  //找出所有从u到v的路径存到全局变量allPath中
-	if (u == v && flag != 0) {
-		allPath.push_back(path);
-		return;
-	}
 
+template<class ElemType>
+void AdjMatrixUndirGraph<ElemType>::DfsHasCycle(){
+	vector<int> path;
+	int flag = 0,u;
+	for (u = 0; u < vexNum; u++)
+		if (Dfs(u, u, 0)) {
+			cout << "该图中存在环" << endl;
+			break;
+		}	
+	if (u == vexNum)
+		cout << "图中无环" << endl;
+}
+
+
+template<class ElemType>
+int AdjMatrixUndirGraph<ElemType>::Dfs(int u, int v, int flag) {  //找出所有从u到v的路径存到全局变量allPath中
+
+	if (u == v && flag != 0)
+		return 0;
+	
 	for (int i = 0; i < vexNum; i++) {     //vec[i][j]表示第i元素的j列出度元素
 		if (arcs[u][i] != DEFAULT_INFINITY && arcs[u][i] != 0) {
 			if (tag[i] == UNVISITED) {
 				tag[i] = VISITED;
-				path.push_back(i);
 				flag = 1;
-				dfs(i, v, path, flag);
-				path.pop_back();
+				Dfs(i, v,flag);
 				tag[i] = UNVISITED;
 			}
+			else {
+				return 1;
+			}
+			
 		}
 	}
 }
+	
+
 
 template <class ElemType>
-int AdjMatrixUndirGraph<ElemType>::AdjHasCycle()
+void AdjMatrixUndirGraph<ElemType>::AdjHasCycle()
 //可达矩阵判断有向图是否存在环
 {
 	int l = 0,flag = 0;              //l为路径长度，同时是矩阵乘方数
@@ -503,8 +522,8 @@ int AdjMatrixUndirGraph<ElemType>::AdjHasCycle()
 		}
 		if (flag) break;
 	}
-	if (flag) return 1;				//有环
-	else	  return 0;				//无环
+	if (flag) cout << "该图中存在环" << endl;			//有环
+	else	  cout << "图中无环" << endl;			//无环
 }
 
 template <class ElemType>
@@ -517,9 +536,11 @@ int AdjMatrixUndirGraph<ElemType>::ViolentHasCycle()
 	{
 		dfs(u, u, path, 0);
 		if (allPath.size() != 0)
+			return 1;
 			break;
 	}
-	return allPath.size();	
+	if(u==vexNum)
+	return 0;
 }
 
 template<class ElemType>

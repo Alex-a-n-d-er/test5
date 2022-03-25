@@ -7,9 +7,10 @@ int main(void)
 {
 	clock_t startTime, endTime;
 	double duration;
+	double a[10], b[10];//测试数据
     try									// 用try封装可能出现异常的代码
 	{
-		char vexs[] = {'A', 'B', 'C', 'D', 'E'};
+		char vexs[] = {'A', 'B', 'C', 'D', 'E','F', 'G', 'H', 'I', 'J' };
 		/*int m[5][5] = {
 			{0, DEFAULT_INFINITY, DEFAULT_INFINITY, DEFAULT_INFINITY, 6},
 			{9, 0, 3, DEFAULT_INFINITY, DEFAULT_INFINITY},
@@ -113,21 +114,32 @@ int main(void)
 					cout<<g.GetWeight(v1, v2);
 					break;
 				case 'A':
-					startTime = clock();
-					g.ViolentHasCycle();
+					/*startTime = clock();
+					cout<<g.ViolentHasCycle()<<endl;
 					endTime = clock();
 					cout << "使用dfs暴力运算的运行时间";
-					cout << setw(10) << (double)(endTime - startTime) / CLOCKS_PER_SEC << endl;
-					startTime = clock();
-					g.AdjHasCycle();
-					endTime = clock();
+					cout << setw(10) << (double)(endTime - startTime) / CLOCKS_PER_SEC << endl;*/
+					for (int j = 0; j < 10; j++) {
+
+						startTime = clock();
+						for (int i = 0; i < 10; i++)
+							g.AdjHasCycle();
+						endTime = clock();
+						a[j] = (double)(endTime - startTime) / CLOCKS_PER_SEC;
+
+						startTime = clock();
+						for (int i = 0; i < 10; i++) 
+							g.DfsHasCycle();
+						endTime = clock();
+						
+						b[j] = (double)(endTime - startTime) / CLOCKS_PER_SEC;
+					}
 					cout << "使用可达矩阵的运行时间";
-					cout << setw(10) << (double)(endTime - startTime) / CLOCKS_PER_SEC << endl;
-					startTime = clock();
-				    g.DfsHasCycle();
-					endTime = clock();
+					for (int i = 0; i < 10; i++)
+						cout << a[i]<<endl;
 					cout << "使用dfs的运行时间";
-					cout << setw(10) << (double)(endTime - startTime) / CLOCKS_PER_SEC <<  endl;
+					for (int i = 0; i < 10; i++)
+					       cout << b[i]<<endl;
 					break;
 				case 'B':
 					cout << endl << "输入两个顶点值:";
