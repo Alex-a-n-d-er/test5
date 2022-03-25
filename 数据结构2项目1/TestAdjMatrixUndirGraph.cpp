@@ -7,7 +7,8 @@ int main(void)
 {
 	clock_t startTime, endTime;
 	double duration;
-	double a[10], b[10];//测试数据
+	double avrg = 0, bvrg = 0,dvrg = 0;
+	double a[10], b[10],d[10];//测试数据
     try									// 用try封装可能出现异常的代码
 	{
 		char vexs[] = {'A', 'B', 'C', 'D', 'E','F', 'G', 'H', 'I', 'J' };
@@ -114,32 +115,47 @@ int main(void)
 					cout<<g.GetWeight(v1, v2);
 					break;
 				case 'A':
-					/*startTime = clock();
-					cout<<g.ViolentHasCycle()<<endl;
-					endTime = clock();
-					cout << "使用dfs暴力运算的运行时间";
-					cout << setw(10) << (double)(endTime - startTime) / CLOCKS_PER_SEC << endl;*/
-					for (int j = 0; j < 10; j++) {
+					n = 10;
+					for (int j = 0; j < n; j++) {
+
+					/*	startTime = clock();
+						for (int i = 0; i < n; i++)
+						cout << g.ViolentHasCycle() << endl;
+						endTime = clock();
+					    a[j] = (double)(endTime - startTime) / CLOCKS_PER_SEC;*/
 
 						startTime = clock();
-						for (int i = 0; i < 10; i++)
+						for (int i = 0; i < n; i++)
 							g.AdjHasCycle();
 						endTime = clock();
-						a[j] = (double)(endTime - startTime) / CLOCKS_PER_SEC;
+						b[j] = (double)(endTime - startTime) / CLOCKS_PER_SEC;
 
 						startTime = clock();
-						for (int i = 0; i < 10; i++) 
+						for (int i = 0; i < n; i++) 
 							g.DfsHasCycle();
-						endTime = clock();
-						
-						b[j] = (double)(endTime - startTime) / CLOCKS_PER_SEC;
+						endTime = clock();	
+						d[j] = (double)(endTime - startTime) / CLOCKS_PER_SEC;
 					}
-					cout << "使用可达矩阵的运行时间";
-					for (int i = 0; i < 10; i++)
-						cout << a[i]<<endl;
-					cout << "使用dfs的运行时间";
-					for (int i = 0; i < 10; i++)
-					       cout << b[i]<<endl;
+					
+				/*	cout << "使用dfs暴力运算的运行时间" << endl;
+					for (int i = 0; i < n; i++)
+					       cout << a[i] << endl;*/
+					cout << "使用可达矩阵的运行时间" << endl;;
+					for (int i = 0; i < n; i++)
+						cout << b[i]<<endl;
+					cout << "使用dfs的运行时间" << endl;;
+					for (int i = 0; i < n; i++)
+					       cout << d[i]<<endl;
+			
+					for (int i = 0; i < n; i++) {
+	           //       avrg += a[i];
+						bvrg += b[i];
+						dvrg += d[i];
+					}
+					cout << "平均时间" << endl;
+					cout << avrg / n << endl;
+					cout << bvrg / n << endl;
+					cout << dvrg / n << endl;
 					break;
 				case 'B':
 					cout << endl << "输入两个顶点值:";
